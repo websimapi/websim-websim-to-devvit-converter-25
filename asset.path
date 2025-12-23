@@ -1,0 +1,3 @@
+        const path = asset.path.replace(/^(\.|\/)+/, ''); // Clean path
+        if (!path || path.endsWith('/')) return; // Skip explicitly marked directories
+

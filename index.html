@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSim to Devvit Converter</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import Map for dependencies -->
+    <script type="importmap">
+    {
+        "imports": {
+            "jszip": "https://esm.sh/jszip@3.10.1"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WebSim ➔ Devvit</h1>
+            <p>Convert any WebSim project into a ready-to-deploy Reddit App.</p>
+        </header>
+
+        <main>
+            <!-- Step 1: Input -->
+            <section id="step-input" class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-mode="url">Fetch from WebSim</button>
+                    <button class="tab-btn" data-mode="zip">Upload .zip</button>
+                </div>
+
+                <div id="mode-url" class="mode-content">
+                    <div class="input-group">
+                        <label for="project-input">Project URL or ID</label>
+                        <input type="text" id="project-input" placeholder="https://websim.ai/p/..." />
+                    </div>
+                    <button id="btn-fetch" class="primary-btn">Fetch Project</button>
+                </div>
+
+                <div id="mode-zip" class="mode-content hidden">
+                    <div class="input-group">
+                        <label for="zip-input">Upload Project Zip</label>
+                        <input type="file" id="zip-input" accept=".zip" />
+                        <p class="hint">Upload a zip containing your HTML game files.</p>
+                    </div>
+                    <button id="btn-process-zip" class="primary-btn">Process Zip</button>
+                </div>
+
+                <div id="fetch-error" class="error-msg hidden"></div>
+            </section>
+
+            <!-- Step 2: Version Selection -->
+            <section id="step-version" class="card hidden">
+                <div class="project-info">
+                    <img id="project-thumb" src="" alt="" class="thumb hidden" />
+                    <div>
+                        <h2 id="project-title">Project Title</h2>
+                        <p id="project-author">by @author</p>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="version-select">Select Version</label>
+                    <select id="version-select"></select>
+                </div>
+
+                <div class="settings-group">
+                    <label>
+                        <input type="checkbox" id="include-readme" checked> Include Setup Instructions (README)
+                    </label>
+                </div>
+
+                <button id="btn-download" class="success-btn">Download Devvit Project (.zip)</button>
+            </section>
+
+            <!-- Loading Overlay -->
+            <div id="loading" class="overlay hidden">
+                <div class="spinner"></div>
+                <p id="loading-text">Processing...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Generated projects require the <a href="https://developers.reddit.com/" target="_blank">Reddit Devvit CLI</a>.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
