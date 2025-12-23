@@ -20,18 +20,12 @@ function walk(dir, callback) {
 
 console.log('🔍 Verifying Project Integrity...');
 
-const SERVER_BUILD = './dist/server/index.cjs';
-if (!fs.existsSync(SERVER_BUILD)) {
-    console.error('❌ Server build missing at ' + SERVER_BUILD);
-    console.error('   Expected: dist/server/index.cjs');
-    if (fs.existsSync('./dist/server')) {
-        console.log('   Contents of ./dist/server:', fs.readdirSync('./dist/server'));
-    } else {
-        console.log('   Folder ./dist/server does not exist.');
-    }
-    console.error('   The app will fail to upload. Check "npm run build:server" output.');
+const SERVER_SRC = './src/server/index.ts';
+if (!fs.existsSync(SERVER_SRC)) {
+    console.error('❌ Server source missing at ' + SERVER_SRC);
+    process.exit(1);
 } else {
-    console.log('✅ Server build found at dist/server/index.cjs');
+    console.log('✅ Server source found at src/server/index.ts');
 }
 
 console.log('🔍 Verifying Webroot Integrity...');
@@ -191,27 +185,17 @@ try {
     console.warn('   If the build fails, try running "npm install" manually.');
 }
 
-// 3. Build Project (Server & Client)
+// 3. Build Project (Client)
 console.log('🔨 Building Project...');
 try {
-    execSync('npm run build', { stdio: 'inherit' });
+    // We only build the client via Vite. 
+    // The server is built by Devvit CLI during "devvit upload" or "devvit playtest".
+    execSync('npm run build:client', { stdio: 'inherit' });
     
     // Verify build output immediately
-    if (!fs.existsSync('dist/server/index.cjs')) {
-        console.error('❌ Server build validation failed!');
-        console.log('   The local build (npm run build:server) failed to produce output.');
-        console.log('   This usually means there is a syntax error in the server code.');
+    if (!fs.existsSync('dist/client/index.html')) {
+        console.error('❌ Client build failed to produce output!');
         process.exit(1);
-    }
-
-    // Verify Config
-    if (fs.existsSync('devvit.json')) {
-        const config = fs.readFileSync('devvit.json', 'utf8');
-        if (!config.includes('"entry": "index.cjs"')) {
-             console.warn('⚠️  devvit.json might have incorrect server entry path (expected "index.cjs").');
-        }
-    } else {
-        console.warn('⚠️  devvit.json not found');
     }
 
 } catch(e) {

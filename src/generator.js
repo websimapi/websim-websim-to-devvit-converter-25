@@ -30,11 +30,11 @@ export async function generateDevvitZip(projectMeta, assets, includeReadme = tru
     const projectSlug = `${truncatedSlug}-${safeId}`;
     const projectTitle = projectMeta.project.title || "WebSim Game";
 
-    // Initialize Analyzer
-    const analyzer = new AssetAnalyzer();
-    const clientFiles = {};
-
     // 1. Process Assets
+    const analyzer = new AssetAnalyzer();
+    const clientFiles = {}; // Source files (HTML, JS, CSS)
+    const publicFiles = {}; // Static assets (images, audio, models)
+
     for (const [path, content] of Object.entries(assets)) {
         if (path.includes('..')) continue;
 
@@ -55,7 +55,9 @@ export async function generateDevvitZip(projectMeta, assets, includeReadme = tru
         } else if (path.endsWith('.css')) {
             clientFiles[path] = analyzer.processCSS(content, path);
         } else {
-            clientFiles[path] = content;
+            // Move non-source assets to public folder so Vite copies them automatically
+            // to the root of the build output.
+            publicFiles[path] = content;
         }
     }
 
@@ -94,6 +96,12 @@ export async function generateDevvitZip(projectMeta, assets, includeReadme = tru
 
     for (const [path, content] of Object.entries(clientFiles)) {
         clientFolder.file(path, content);
+    }
+
+    // Static Assets Folder (src/client/public)
+    const publicFolder = clientFolder.folder("public");
+    for (const [path, content] of Object.entries(publicFiles)) {
+        publicFolder.file(path, content);
     }
 
     // Polyfills in src/client

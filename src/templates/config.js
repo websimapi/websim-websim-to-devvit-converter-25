@@ -46,7 +46,7 @@ export const generateDevvitJson = (slug, externalDomains = []) => JSON.stringify
     }
   },
   "server": {
-    "entry": "index.cjs"
+    "entry": "src/server/index.ts"
   },
   "permissions": {
     "redis": true,
@@ -96,6 +96,12 @@ export default defineConfig({
       }
     }),` : ''}
   ],
+  esbuild: {
+    // Handle JSX in .js files, which is common in WebSim exports
+    loader: 'jsx',
+    include: /.*\.(js|jsx|ts|tsx)$/,
+    exclude: [],
+  },
   resolve: {
     alias: {
       // CRITICAL: Remotion and some React libs might try to import jsx-dev-runtime in 'dev' mode.

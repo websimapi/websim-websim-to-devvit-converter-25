@@ -309,9 +309,10 @@ export class AssetAnalyzer {
         }
 
         // 3. Process Scripts
-        html = html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/gi, (match, attrs, content) => {
+        // Improved regex to handle newlines in attributes and ensure consistent type="module" injection
+        html = html.replace(/<script\b([\s\S]*?)>([\s\S]*?)<\/script>/gi, (match, attrs, content) => {
             // Check src
-            const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
+            const srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
             if (srcMatch) {
                 const src = srcMatch[1];
                 
@@ -330,14 +331,15 @@ export class AssetAnalyzer {
                 }
                 
                 // Local scripts: Ensure type="module" so Vite bundles them
-                if (!attrs.includes('type="module"')) {
-                    let newTag = match;
-                    if (attrs.includes('type=')) {
-                         newTag = newTag.replace(/type=["'](text\/javascript|application\/javascript)["']/i, 'type="module"');
+                // This fixes the "can't be bundled without type=module" error in Vite
+                if (!/\btype\s*=\s*["']module["']/i.test(attrs)) {
+                    let newAttrs = attrs;
+                    if (/\btype\s*=\s*["']/.test(attrs)) {
+                         newAttrs = newAttrs.replace(/type\s*=\s*["'](?:text\/javascript|application\/javascript)?["']/i, 'type="module"');
                     } else {
-                         newTag = newTag.replace(/<script/i, '<script type="module"');
+                         newAttrs = ' type="module"' + newAttrs;
                     }
-                    return newTag;
+                    return `<script${newAttrs}>${content}</script>`;
                 }
                 return match; 
             }
@@ -357,13 +359,16 @@ export class AssetAnalyzer {
             extractedScripts.push({ filename: newScriptName, content: processedContent });
 
             // Force type="module" for all scripts to ensure consistent execution order (deferred)
-            // with the polyfills which are also modules.
             let newAttrs = attrs;
-            if (!newAttrs.includes('type="module"')) {
-                newAttrs += ' type="module"';
+            if (!/\btype\s*=\s*["']module["']/i.test(newAttrs)) {
+                if (/\btype\s*=\s*["']/.test(newAttrs)) {
+                    newAttrs = newAttrs.replace(/type\s*=\s*["'](?:text\/javascript|application\/javascript)?["']/i, 'type="module"');
+                } else {
+                    newAttrs = ' type="module"' + newAttrs;
+                }
             }
 
-            return `<script src="./${newScriptName}" ${newAttrs}></script>`;
+            return `<script src="./${newScriptName}"${newAttrs}></script>`;
         });
 
         // 4. Remove inline event handlers (CSP) - crude regex
