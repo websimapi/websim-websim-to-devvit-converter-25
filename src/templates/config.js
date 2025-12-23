@@ -101,7 +101,9 @@ export default defineConfig({
       // CRITICAL: Remotion and some React libs might try to import jsx-dev-runtime in 'dev' mode.
       // We alias to a local proxy that implements jsxDEV using the production jsx runtime.
       'react/jsx-dev-runtime': '/jsx-dev-proxy.js',
+      'react-dom/jsx-dev-runtime': '/jsx-dev-proxy.js',
       'react/jsx-runtime': 'react/jsx-runtime',
+      'react-dom/jsx-runtime': 'react-dom/jsx-runtime',
       'remotion': 'remotion',
       'websim': '/websim_package.js'
     },

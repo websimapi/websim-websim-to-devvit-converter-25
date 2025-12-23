@@ -69,13 +69,20 @@ export class AssetAnalyzer {
             return 'pixi.js';
         }
         
-        // 3.5 React CDN Runtime Fix
+        // 3.5 React & ReactDOM CDN/Runtime Fix
         if (source.includes('react')) {
+             const isDOM = source.includes('react-dom');
+             const pkgName = isDOM ? 'react-dom' : 'react';
+             this.dependencies[pkgName] = '^18.2.0';
+
              if (source.includes('jsx-dev-runtime') || source.includes('jsx-runtime')) {
-                 this.dependencies['react'] = '^18.2.0';
                  // We preserve the dev-runtime import path so our Vite alias can intercept it with a proxy
-                 // Rewriting to jsx-runtime directly breaks code expecting jsxDEV export
-                 return source.includes('jsx-dev-runtime') ? 'react/jsx-dev-runtime' : 'react/jsx-runtime';
+                 return source.includes('jsx-dev-runtime') ? `${pkgName}/jsx-dev-runtime` : `${pkgName}/jsx-runtime`;
+             }
+             
+             // If it's a direct CDN link to a UMD/development file, we strip the path to use the npm main export
+             if (source.includes('/umd/') || source.includes('.development') || source.includes('.production')) {
+                 return pkgName;
              }
         }
 
@@ -86,10 +93,21 @@ export class AssetAnalyzer {
         if (pkgMatch) {
             const pkg = pkgMatch[1];
             const ver = pkgMatch[2];
-            const path = pkgMatch[3] || '';
+            let path = pkgMatch[3] || '';
 
             // Filter out common non-packages or mistakes
             if (pkg !== 'gh' && pkg !== 'npm') {
+                // Redirect legacy CDN paths for React/ReactDOM to standard exports
+                if (pkg === 'react' || pkg === 'react-dom') {
+                    const isAllowed = path === '' || 
+                                     path.includes('jsx-runtime') || 
+                                     path.includes('jsx-dev-runtime') || 
+                                     (pkg === 'react-dom' && path.includes('client'));
+                    if (!isAllowed) {
+                        path = ''; // Redirect UMD/dist/development/production to main entry
+                    }
+                }
+
                 // Update dependency if new or more specific than 'latest'
                 const current = this.dependencies[pkg];
                 if (!current || (current === 'latest' && ver)) {
